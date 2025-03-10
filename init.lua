@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -175,10 +175,10 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' })
 
 -- TIP: Disable arrow keys in normal mode
--- vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
--- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
--- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
--- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -202,6 +202,39 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+--new things jc has added
+--Terminal things
+vim.api.nvim_create_autocmd('TermOpen', {
+  group = vim.api.nvim_create_augroup('custom-term-open', { clear = true }),
+  callback = function()
+    vim.opt.number = false
+    vim.opt.relativenumber = false
+  end,
+})
+
+vim.keymap.set('n', '<space>st', function()
+  vim.cmd.vnew()
+  vim.cmd.term()
+  vim.cmd.wincmd 'J'
+  vim.api.nvim_win_set_height(0, 10)
+end, { desc = 'opens [S]hort [T]erminal' })
+
+vim.keymap.set('n', '<space>tt', function()
+  vim.cmd.vnew()
+  vim.cmd.term()
+  vim.cmd.wincmd 'H'
+  vim.api.nvim_win_set_width(0, 70)
+end, { desc = 'opens [T]all [T]erminal' })
+
+--indentation
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+vim.opt.expandtab = true
+vim.opt.smartindent = true
+
+--netrw from primeagen
+vim.keymap.set('n', '<leader>pv', vim.cmd.Ex, { desc = 'View cwd in netrw' })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -658,9 +691,9 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
+        clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -889,20 +922,52 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    'loctvl842/monokai-pro.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
       ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
+      require('monokai-pro').setup {
+        transparent_background = false,
+        terminal_colors = true,
+        devicons = true, -- highlight the icons of `nvim-web-devicons`
         styles = {
-          comments = { italic = false }, -- Disable italics in comments
+          comment = { italic = true },
+          keyword = { italic = true }, -- any other keyword
+          type = { italic = true }, -- (preferred) int, long, char, etc
+          storageclass = { italic = true }, -- static, register, volatile, etc
+          structure = { italic = true }, -- struct, union, enum, etc
+          parameter = { italic = true }, -- parameter pass in function
+          annotation = { italic = true },
+          tag_attribute = { italic = true }, -- attribute of tag in reactjs
+        },
+        filter = 'classic', -- classic | octagon | pro | machine | ristretto | spectrum
+        -- Enable this will disable filter option
+        inc_search = 'background', -- underline | background
+        background_clear = {
+          -- "float_win",
+          'toggleterm',
+          'telescope',
+          'which-key',
+          'renamer',
+          'notify',
+          -- "nvim-tree",
+          -- "neo-tree",
+          -- "bufferline", -- better used if background of `neo-tree` or `nvim-tree` is cleared
+        }, -- "float_win", "toggleterm", "telescope", "which-key", "renamer", "neo-tree", "nvim-tree", "bufferline"
+        plugins = {
+          bufferline = {
+            underline_selected = false,
+            underline_visible = true,
+          },
+          indent_blankline = {
+            context_highlight = 'default', -- default | pro
+            context_start_underline = false,
+          },
         },
       }
 
       -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme 'monokai-pro-classic'
     end,
   },
 
